@@ -230,6 +230,37 @@ body{background:var(--fundo);font-family:var(--fonte);color:var(--tinta);}
   .topo .btn{padding:9px 14px;font-size:13px;}
 }
 
+/* ============ LOGIN ============ */
+.login-fundo{
+  position:fixed;inset:0;background:linear-gradient(135deg,var(--grafite) 0%,#153F66 55%,var(--marca) 130%);
+  z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.login-fundo.escondido{display:none;}
+.login-caixa{
+  background:#fff;border-radius:var(--raio);box-shadow:var(--sombra);width:100%;max-width:360px;
+  padding:30px 26px;display:flex;flex-direction:column;gap:16px;
+}
+.login-caixa .marca-icone{
+  width:52px;height:52px;border-radius:12px;background:var(--marca-suave);
+  display:grid;place-items:center;margin:0 auto;overflow:hidden;
+}
+.login-caixa .marca-icone img{width:100%;height:100%;object-fit:cover;}
+.login-caixa h2{font-family:var(--fonte-titulo);font-size:18px;text-align:center;}
+.login-caixa p.sub{font-size:12.5px;color:var(--sub);text-align:center;margin-top:-8px;}
+.login-caixa .campo label{font-size:12px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;}
+.login-caixa .campo input{
+  font-family:var(--fonte);font-size:14.5px;color:var(--tinta);
+  border:1.5px solid var(--linha);border-radius:10px;padding:11px 13px;background:#FBFCFE;
+  outline:none;width:100%;margin-top:6px;
+}
+.login-caixa .campo input:focus{border-color:var(--marca);box-shadow:0 0 0 3px rgba(19,78,155,.12);background:#fff;}
+.login-caixa .btn-entrar{
+  font-family:var(--fonte);border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:14.5px;
+  padding:12px 20px;background:linear-gradient(135deg,var(--marca),#2E9BF0);color:#fff;margin-top:4px;
+}
+.login-caixa .btn-entrar:disabled{opacity:.6;cursor:wait;}
+.login-caixa .erro{font-size:12.5px;color:var(--vermelho);text-align:center;min-height:16px;}
+
 /* ============ MODELO DO PDF (oculto na tela) ============ */
 #docModelo{position:fixed;left:-12000px;top:0;}
 .doc-pagina{background:#fff;width:794px;min-height:1123px;padding:45px 55px;font-family:Calibri,Arial,sans-serif;color:#000;}
@@ -270,6 +301,29 @@ body{background:var(--fundo);font-family:var(--fonte);color:var(--tinta);}
 </head>
 <body>
 
+<!-- ================= LOGIN ================= -->
+<div class="login-fundo" id="loginFundo">
+  <div class="login-caixa">
+    <div class="marca-icone">
+      <img src="data:image/jpeg;base64,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" alt="Mundivideo Eletrônica">
+    </div>
+    <h2>Análise Técnica · Mundivideo</h2>
+    <p class="sub">Entre com seu e-mail e senha para acessar os laudos</p>
+    <form id="formLogin" onsubmit="entrar();return false;">
+      <div class="campo">
+        <label for="loginEmail">E-mail</label>
+        <input type="email" id="loginEmail" autocomplete="username" required>
+      </div>
+      <div class="campo" style="margin-top:12px;">
+        <label for="loginSenha">Senha</label>
+        <input type="password" id="loginSenha" autocomplete="current-password" required>
+      </div>
+      <div class="erro" id="loginErro"></div>
+      <button type="submit" class="btn-entrar" id="btnEntrar">Entrar</button>
+    </form>
+  </div>
+</div>
+
 <!-- ================= TOPO ================= -->
 <header class="topo">
   <div class="logotipo">
@@ -285,10 +339,12 @@ body{background:var(--fundo);font-family:var(--fonte);color:var(--tinta);}
     <div class="trilha"><div class="preenchido" id="barraProgresso"></div></div>
     <span id="textoProgresso">0 de 12 itens</span>
   </div>
+  <span id="usuarioLogado" style="font-size:12px;color:rgba(255,255,255,.75);"></span>
   <button class="btn btn-fantasma" onclick="abrirOrdens()">Ordens salvas</button>
   <button class="btn btn-fantasma" onclick="novaAnalise()">Nova análise</button>
   <button class="btn btn-salvar" onclick="salvarOrdem()">Salvar ordem</button>
   <button class="btn btn-exportar" onclick="exportarPDF()">Exportar PDF</button>
+  <button class="btn btn-fantasma" onclick="sairConta()">Sair</button>
 </header>
 
 <main class="conteudo">
@@ -556,6 +612,65 @@ body{background:var(--fundo);font-family:var(--fonte);color:var(--tinta);}
 </div>
 
 <script>
+/* ================= SUPABASE + LOGIN ================= */
+const SUPABASE_URL='https://hlntxzjxrthjbkhmptju.supabase.co';
+const SUPABASE_KEY='sb_publishable_zYdNqtu1lqUmyRhIRC1vOw_9uHwy2ju';
+const clienteSupabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+function mostrarLogin(mostrar){
+  document.getElementById('loginFundo').classList.toggle('escondido',!mostrar);
+}
+
+async function verificarSessao(){
+  const {data:{session}}=await clienteSupabase.auth.getSession();
+  if(session){
+    mostrarLogin(false);
+    document.getElementById('usuarioLogado').textContent=session.user.email;
+  }else{
+    mostrarLogin(true);
+  }
+}
+
+async function entrar(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const senha=document.getElementById('loginSenha').value;
+  const erro=document.getElementById('loginErro');
+  const botao=document.getElementById('btnEntrar');
+  erro.textContent='';
+  if(!email||!senha){
+    erro.textContent='Preencha e-mail e senha.';
+    return;
+  }
+  botao.disabled=true;
+  botao.textContent='Entrando...';
+  const {data,error}=await clienteSupabase.auth.signInWithPassword({email,password:senha});
+  botao.disabled=false;
+  botao.textContent='Entrar';
+  if(error){
+    erro.textContent='E-mail ou senha incorretos.';
+    return;
+  }
+  document.getElementById('loginSenha').value='';
+  document.getElementById('usuarioLogado').textContent=data.user.email;
+  mostrarLogin(false);
+}
+
+async function sairConta(){
+  await clienteSupabase.auth.signOut();
+  document.getElementById('usuarioLogado').textContent='';
+  document.getElementById('loginEmail').value='';
+  document.getElementById('loginSenha').value='';
+  mostrarLogin(true);
+}
+
+clienteSupabase.auth.onAuthStateChange((evento,session)=>{
+  if(evento==='SIGNED_OUT'){
+    mostrarLogin(true);
+  }
+});
+
+verificarSessao();
+
 /* ================= ESTADO ================= */
 const fotos = {}; // chave -> dataURL
 const escolhas = { atendimento:null, coletado:null };
@@ -737,9 +852,6 @@ function toast(msg){
 }
 
 /* ================= BANCO DE DADOS (Supabase) ================= */
-const SUPABASE_URL='https://hlntxzjxrthjbkhmptju.supabase.co';
-const SUPABASE_KEY='sb_publishable_zYdNqtu1lqUmyRhIRC1vOw_9uHwy2ju';
-const clienteSupabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let ordemAtualId=null;
 
 function coletarEstado(){
