@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Análise Técnica · Mundivideo</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -735,23 +736,11 @@ function toast(msg){
   setTimeout(()=>t.classList.remove('mostrar'),3200);
 }
 
-/* ================= BANCO DE DADOS (IndexedDB) ================= */
-let bd=null, ordemAtualId=null;
-
-function abrirBanco(){
-  return new Promise((resolver,rejeitar)=>{
-    if(bd)return resolver(bd);
-    const req=indexedDB.open('mundivideo_os',1);
-    req.onupgradeneeded=e=>{
-      const db=e.target.result;
-      if(!db.objectStoreNames.contains('ordens')){
-        db.createObjectStore('ordens',{keyPath:'id',autoIncrement:true});
-      }
-    };
-    req.onsuccess=e=>{bd=e.target.result;resolver(bd);};
-    req.onerror=()=>rejeitar(req.error);
-  });
-}
+/* ================= BANCO DE DADOS (Supabase) ================= */
+const SUPABASE_URL='https://hlntxzjxrthjbkhmptju.supabase.co';
+const SUPABASE_KEY='sb_publishable_zYdNqtu1lqUmyRhIRC1vOw_9uHwy2ju';
+const clienteSupabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let ordemAtualId=null;
 
 function coletarEstado(){
   const v=id=>document.getElementById(id).value;
@@ -772,31 +761,36 @@ function coletarEstado(){
 }
 
 async function salvarOrdem(){
+  const botoesSalvar=[...document.querySelectorAll('.btn-salvar')];
   try{
-    await abrirBanco();
     const estado=coletarEstado();
     if(!estado.campos.sinistro.trim() && !estado.campos.serial.trim()){
       toast('Preencha ao menos o sinistro ou o serial antes de salvar.');
       return;
     }
+    botoesSalvar.forEach(b=>b.disabled=true);
     const registro={
       sinistro:estado.campos.sinistro.trim(),
       serial:estado.campos.serial.trim(),
       marca:estado.campos.marca.trim(),
       modelo:estado.campos.modelo.trim(),
-      atualizadoEm:Date.now(),
+      atualizado_em:new Date().toISOString(),
       estado:estado
     };
-    if(ordemAtualId!==null)registro.id=ordemAtualId;
-    const tx=bd.transaction('ordens','readwrite');
-    const req=tx.objectStore('ordens').put(registro);
-    req.onsuccess=()=>{
-      ordemAtualId=req.result;
-      toast('Ordem salva'+(registro.sinistro?(' — sinistro '+registro.sinistro):'')+'.');
-    };
-    req.onerror=()=>toast('Não foi possível salvar. Tente novamente.');
+    let resultado;
+    if(ordemAtualId!==null){
+      resultado=await clienteSupabase.from('ordens').update(registro).eq('id',ordemAtualId).select('id').single();
+    }else{
+      resultado=await clienteSupabase.from('ordens').insert(registro).select('id').single();
+    }
+    if(resultado.error)throw resultado.error;
+    ordemAtualId=resultado.data.id;
+    toast('Ordem salva'+(registro.sinistro?(' — sinistro '+registro.sinistro):'')+'.');
   }catch(e){
-    toast('Banco de dados indisponível neste navegador.');
+    console.error(e);
+    toast('Não foi possível salvar. Verifique sua conexão.');
+  }finally{
+    botoesSalvar.forEach(b=>b.disabled=false);
   }
 }
 
@@ -810,90 +804,90 @@ function fecharOrdens(){
 }
 
 async function listarOrdens(filtro){
-  await abrirBanco();
   const lista=document.getElementById('listaOrdens');
-  const tx=bd.transaction('ordens','readonly');
-  const req=tx.objectStore('ordens').getAll();
-  req.onsuccess=()=>{
-    let itens=req.result.sort((a,b)=>b.atualizadoEm-a.atualizadoEm);
-    const f=(filtro||'').toLowerCase().trim();
-    if(f){
-      itens=itens.filter(o=>
-        (o.sinistro||'').toLowerCase().includes(f)||
-        (o.serial||'').toLowerCase().includes(f)||
-        (o.marca||'').toLowerCase().includes(f)||
-        (o.modelo||'').toLowerCase().includes(f)
-      );
-    }
-    if(!itens.length){
-      lista.innerHTML='<div class="modal-vazio">'+(f?'Nenhuma ordem encontrada para essa busca.':'Nenhuma ordem salva ainda.<br>Preencha o laudo e toque em "Salvar ordem".')+'</div>';
-      return;
-    }
-    lista.innerHTML=itens.map(o=>{
-      const dt=new Date(o.atualizadoEm);
-      const quando=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear()
-        +' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
-      return '<div class="os-item">'+
-        '<div class="os-info">'+
-          '<div class="os-sinistro">'+(o.sinistro?('Sinistro '+o.sinistro):(o.serial||'Sem identificação'))+'</div>'+
-          '<div class="os-detalhe">'+[o.marca,o.modelo].filter(Boolean).join(' · ')+(o.marca||o.modelo?' · ':'')+quando+'</div>'+
-        '</div>'+
-        '<button class="abrir" onclick="carregarOrdem('+o.id+')">Abrir</button>'+
-        '<button class="excluir" onclick="excluirOrdem('+o.id+')">Excluir</button>'+
-      '</div>';
-    }).join('');
-  };
+  lista.innerHTML='<div class="modal-vazio">Carregando...</div>';
+  let consulta=clienteSupabase.from('ordens')
+    .select('id,sinistro,serial,marca,modelo,atualizado_em')
+    .order('atualizado_em',{ascending:false});
+  const f=(filtro||'').toLowerCase().trim();
+  if(f){
+    const termo='%'+f+'%';
+    consulta=consulta.or('sinistro.ilike.'+termo+',serial.ilike.'+termo+',marca.ilike.'+termo+',modelo.ilike.'+termo);
+  }
+  const {data,error}=await consulta;
+  if(error){
+    console.error(error);
+    lista.innerHTML='<div class="modal-vazio">Não foi possível carregar as ordens salvas. Verifique sua conexão.</div>';
+    return;
+  }
+  const itens=data||[];
+  if(!itens.length){
+    lista.innerHTML='<div class="modal-vazio">'+(f?'Nenhuma ordem encontrada para essa busca.':'Nenhuma ordem salva ainda.<br>Preencha o laudo e toque em "Salvar ordem".')+'</div>';
+    return;
+  }
+  lista.innerHTML=itens.map(o=>{
+    const dt=new Date(o.atualizado_em);
+    const quando=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear()
+      +' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+    return '<div class="os-item">'+
+      '<div class="os-info">'+
+        '<div class="os-sinistro">'+(o.sinistro?('Sinistro '+o.sinistro):(o.serial||'Sem identificação'))+'</div>'+
+        '<div class="os-detalhe">'+[o.marca,o.modelo].filter(Boolean).join(' · ')+(o.marca||o.modelo?' · ':'')+quando+'</div>'+
+      '</div>'+
+      '<button class="abrir" onclick="carregarOrdem('+o.id+')">Abrir</button>'+
+      '<button class="excluir" onclick="excluirOrdem('+o.id+')">Excluir</button>'+
+    '</div>';
+  }).join('');
 }
 
 async function carregarOrdem(id){
-  await abrirBanco();
-  const tx=bd.transaction('ordens','readonly');
-  const req=tx.objectStore('ordens').get(id);
-  req.onsuccess=()=>{
-    const o=req.result;
-    if(!o)return;
-    const est=o.estado;
-    Object.entries(est.campos).forEach(([id2,val])=>{
-      const el=document.getElementById(id2);
-      if(el)el.value=val||'';
-    });
-    // seleções
-    escolhas.atendimento=est.escolhas.atendimento;
-    escolhas.coletado=est.escolhas.coletado;
-    document.querySelectorAll('#segAtendimento button').forEach(b=>b.classList.toggle('ativo',b.dataset.valor===escolhas.atendimento));
-    document.querySelectorAll('#segColetado button').forEach(b=>b.classList.toggle('ativo',b.dataset.valor===escolhas.coletado));
-    // fotos
-    Object.keys(fotos).forEach(k=>delete fotos[k]);
-    Object.assign(fotos,est.fotos||{});
-    listaFotos.forEach(f=>desenharTile(f.chave));
-    // assinatura
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    temAssinatura=false;
-    if(est.assinatura){
-      const img=new Image();
-      img.onload=()=>{ctx.drawImage(img,0,0,canvas.width,canvas.height);temAssinatura=true;atualizarProgresso();};
-      img.src=est.assinatura;
-    }
-    ordemAtualId=o.id;
-    atualizarProgresso();
-    fecharOrdens();
-    toast('Ordem carregada. Alterações serão salvas na mesma ordem.');
-    window.scrollTo({top:0,behavior:'smooth'});
-  };
+  const {data:o,error}=await clienteSupabase.from('ordens').select('*').eq('id',id).single();
+  if(error||!o){
+    console.error(error);
+    toast('Não foi possível abrir esta ordem.');
+    return;
+  }
+  const est=o.estado;
+  Object.entries(est.campos).forEach(([id2,val])=>{
+    const el=document.getElementById(id2);
+    if(el)el.value=val||'';
+  });
+  // seleções
+  escolhas.atendimento=est.escolhas.atendimento;
+  escolhas.coletado=est.escolhas.coletado;
+  document.querySelectorAll('#segAtendimento button').forEach(b=>b.classList.toggle('ativo',b.dataset.valor===escolhas.atendimento));
+  document.querySelectorAll('#segColetado button').forEach(b=>b.classList.toggle('ativo',b.dataset.valor===escolhas.coletado));
+  // fotos
+  Object.keys(fotos).forEach(k=>delete fotos[k]);
+  Object.assign(fotos,est.fotos||{});
+  listaFotos.forEach(f=>desenharTile(f.chave));
+  // assinatura
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  temAssinatura=false;
+  if(est.assinatura){
+    const img=new Image();
+    img.onload=()=>{ctx.drawImage(img,0,0,canvas.width,canvas.height);temAssinatura=true;atualizarProgresso();};
+    img.src=est.assinatura;
+  }
+  ordemAtualId=o.id;
+  atualizarProgresso();
+  fecharOrdens();
+  toast('Ordem carregada. Alterações serão salvas na mesma ordem.');
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 async function excluirOrdem(id){
   if(!confirm('Excluir esta ordem salva? Essa ação não pode ser desfeita.'))return;
-  await abrirBanco();
-  const tx=bd.transaction('ordens','readwrite');
-  tx.objectStore('ordens').delete(id).onsuccess=()=>{
-    if(ordemAtualId===id)ordemAtualId=null;
-    listarOrdens(document.getElementById('buscaOrdens').value);
-    toast('Ordem excluída.');
-  };
+  const {error}=await clienteSupabase.from('ordens').delete().eq('id',id);
+  if(error){
+    console.error(error);
+    toast('Não foi possível excluir. Tente novamente.');
+    return;
+  }
+  if(ordemAtualId===id)ordemAtualId=null;
+  listarOrdens(document.getElementById('buscaOrdens').value);
+  toast('Ordem excluída.');
 }
-
-abrirBanco().catch(()=>{});
 
 /* ================= EXPORTAR PDF ================= */
 async function exportarPDF(){
