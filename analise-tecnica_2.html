@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análise Técnica · Mundivideo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --fundo:#EEF1F5;
+  --card:#FFFFFF;
+  --tinta:#1C232C;
+  --sub:#67717E;
+  --linha:#E2E7ED;
+  --marca:#1D7DD8;          /* azul da logo */
+  --marca-escuro:#0F5BA8;
+  --marca-suave:#E8F2FC;
+  --grafite:#2B313B;        /* grafite da logo */
+  --grafite-claro:#3A424E;
+  --ambar:#4FB3FF;          /* azul-circuito (barra de progresso) */
+  --verde:#16A34A;
+  --vermelho:#DC2626;
+  --raio:14px;
+  --sombra:0 1px 2px rgba(28,35,44,.05),0 4px 16px rgba(28,35,44,.06);
+  --fonte:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --fonte-titulo:'Sora','Inter',sans-serif;
+  --fonte-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;}
+body{background:var(--fundo);font-family:var(--fonte);color:var(--tinta);}
+
+/* ============ TOPO ============ */
+.topo{
+  position:sticky;top:0;z-index:40;
+  background:linear-gradient(135deg,var(--grafite) 0%,#153F66 55%,var(--marca) 130%);
+  color:#fff;padding:12px 22px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  box-shadow:0 2px 14px rgba(28,35,44,.4);
+}
+.logotipo{display:flex;align-items:center;gap:12px;flex:1;min-width:230px;}
+.logotipo .marca-icone{
+  width:46px;height:46px;border-radius:11px;background:#fff;
+  display:grid;place-items:center;flex-shrink:0;overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+.logotipo .marca-icone img{width:100%;height:100%;object-fit:cover;}
+.logotipo h1{font-family:var(--fonte-titulo);font-size:16px;font-weight:700;letter-spacing:.2px;}
+.logotipo small{display:block;font-weight:400;font-size:11.5px;opacity:.75;font-family:var(--fonte);}
+.progresso{
+  display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.18);border-radius:99px;padding:7px 14px;font-size:12.5px;
+}
+.progresso .trilha{width:110px;height:6px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden;}
+.progresso .preenchido{height:100%;width:0%;background:var(--ambar);border-radius:99px;transition:width .35s ease;}
+.btn{
+  font-family:var(--fonte);border:none;border-radius:10px;cursor:pointer;
+  font-weight:600;font-size:14px;padding:11px 20px;transition:.15s;
+}
+.btn-exportar{
+  background:linear-gradient(135deg,var(--marca),#2E9BF0);color:#fff;
+  box-shadow:0 3px 12px rgba(29,125,216,.5);
+}
+.btn-exportar:hover{filter:brightness(1.07);}
+.btn-exportar:disabled{opacity:.6;cursor:wait;}
+.btn-salvar{
+  background:#fff;color:var(--marca-escuro);border:1px solid rgba(255,255,255,.4);
+  font-weight:700;
+}
+.btn-salvar:hover{background:#F0F7FE;}
+.btn-fantasma{background:transparent;color:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.3);}
+.btn-fantasma:hover{background:rgba(255,255,255,.08);}
+
+/* ============ CONTEÚDO ============ */
+.conteudo{max-width:860px;margin:0 auto;padding:28px 18px 90px;display:flex;flex-direction:column;gap:18px;}
+
+.cartao{
+  background:var(--card);border-radius:var(--raio);box-shadow:var(--sombra);
+  border:1px solid var(--linha);overflow:hidden;
+}
+.cartao-cabecalho{
+  display:flex;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid var(--linha);
+}
+.cartao-cabecalho .icone{
+  width:36px;height:36px;border-radius:9px;background:var(--marca-suave);color:var(--marca);
+  display:grid;place-items:center;flex-shrink:0;
+}
+.cartao-cabecalho h2{font-family:var(--fonte-titulo);font-size:15px;font-weight:700;}
+.cartao-cabecalho p{font-size:12.5px;color:var(--sub);margin-top:1px;}
+.cartao-corpo{padding:20px 22px;}
+
+.grade{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.campo{display:flex;flex-direction:column;gap:6px;}
+.campo.largo{grid-column:1/-1;}
+.campo label{font-size:12px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;}
+.campo input,.campo textarea{
+  font-family:var(--fonte);font-size:14.5px;color:var(--tinta);
+  border:1.5px solid var(--linha);border-radius:10px;padding:11px 13px;background:#FBFCFE;
+  outline:none;transition:border-color .15s, box-shadow .15s;width:100%;
+}
+.campo input:focus,.campo textarea:focus{border-color:var(--marca);box-shadow:0 0 0 3px rgba(19,78,155,.12);background:#fff;}
+.campo input.mono{font-family:var(--fonte-mono);font-size:14px;letter-spacing:.5px;text-transform:uppercase;}
+.campo textarea{min-height:110px;resize:vertical;line-height:1.55;}
+.campo .ajuda{font-size:11.5px;color:var(--sub);}
+
+/* peças */
+.peca-bloco{border:1.5px dashed var(--linha);border-radius:12px;padding:16px;background:#FBFCFE;}
+.peca-bloco + .peca-bloco{margin-top:14px;}
+.peca-bloco .tag{
+  display:inline-block;font-size:11px;font-weight:700;color:var(--marca);background:var(--marca-suave);
+  border-radius:99px;padding:3px 10px;margin-bottom:12px;letter-spacing:.4px;
+}
+
+/* segmentado */
+.segmentado{display:flex;background:#F1F4F9;border-radius:11px;padding:4px;gap:4px;}
+.segmentado button{
+  flex:1;border:none;background:transparent;border-radius:8px;padding:11px 8px;
+  font-family:var(--fonte);font-size:14px;font-weight:600;color:var(--sub);cursor:pointer;transition:.15s;
+}
+.segmentado button.ativo{background:var(--marca);color:#fff;box-shadow:0 2px 8px rgba(19,78,155,.35);}
+
+/* fotos */
+.grade-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
+.foto-tile{
+  border:1.8px dashed #C3CEDC;border-radius:12px;background:#FBFCFE;cursor:pointer;
+  min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;text-align:center;padding:14px;position:relative;overflow:hidden;transition:.15s;
+}
+.foto-tile:hover{border-color:var(--marca);background:var(--marca-suave);}
+.foto-tile .foto-icone{color:#9AA9BC;}
+.foto-tile .foto-nome{font-size:12.5px;font-weight:600;color:var(--tinta);line-height:1.3;}
+.foto-tile .foto-dica{font-size:11px;color:var(--sub);}
+.foto-tile.com-foto{border-style:solid;border-color:var(--verde);padding:0;}
+.foto-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.foto-tile .sobreposicao{
+  position:absolute;inset:auto 0 0 0;background:linear-gradient(transparent,rgba(10,20,35,.85));
+  color:#fff;font-size:11.5px;font-weight:600;padding:22px 10px 8px;display:flex;
+  justify-content:space-between;align-items:center;gap:6px;
+}
+.foto-tile .sobreposicao button{
+  border:none;background:rgba(255,255,255,.18);color:#fff;border-radius:6px;
+  font-size:11px;padding:4px 9px;cursor:pointer;font-family:var(--fonte);
+}
+.foto-tile .selo-ok{
+  position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:99px;
+  background:var(--verde);color:#fff;display:grid;place-items:center;font-size:13px;
+}
+
+/* assinatura */
+.assinatura-area{display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start;}
+.quadro-assinatura{border:1.5px solid var(--linha);border-radius:12px;background:#FBFCFE;overflow:hidden;}
+.quadro-assinatura canvas{display:block;width:100%;height:150px;cursor:crosshair;touch-action:none;background:#fff;}
+.quadro-assinatura .barra-ass{
+  display:flex;gap:8px;padding:9px 12px;border-top:1px solid var(--linha);background:#F6F8FB;
+}
+.quadro-assinatura .barra-ass button,.quadro-assinatura .barra-ass label{
+  font-family:var(--fonte);font-size:12px;font-weight:600;color:var(--marca);
+  background:#fff;border:1px solid var(--linha);border-radius:8px;padding:6px 12px;cursor:pointer;
+}
+
+/* rodapé de ação */
+.rodape-acao{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+  border-top:1px solid var(--linha);padding:12px 18px;
+  display:flex;justify-content:center;gap:12px;
+}
+.rodape-acao .btn-exportar{min-width:260px;padding:13px 20px;font-size:15px;}
+.aviso{
+  font-size:12px;color:var(--sub);text-align:center;margin-top:4px;
+}
+.toast{
+  position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#16212E;color:#fff;font-size:13.5px;padding:11px 20px;border-radius:10px;
+  opacity:0;pointer-events:none;transition:.3s;z-index:60;box-shadow:0 6px 24px rgba(0,0,0,.3);
+}
+.toast.mostrar{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ============ MODAL DE ORDENS SALVAS ============ */
+.modal-fundo{
+  position:fixed;inset:0;background:rgba(20,26,34,.55);backdrop-filter:blur(3px);
+  z-index:70;display:none;align-items:flex-end;justify-content:center;
+}
+.modal-fundo.aberto{display:flex;}
+.modal{
+  background:#fff;width:100%;max-width:640px;max-height:85vh;
+  border-radius:18px 18px 0 0;display:flex;flex-direction:column;overflow:hidden;
+}
+@media(min-width:700px){
+  .modal-fundo{align-items:center;padding:20px;}
+  .modal{border-radius:18px;}
+}
+.modal-cabecalho{
+  display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--linha);
+}
+.modal-cabecalho h3{font-family:var(--fonte-titulo);font-size:16px;flex:1;}
+.modal-cabecalho .fechar{
+  border:none;background:#F1F4F8;border-radius:8px;width:32px;height:32px;
+  font-size:16px;cursor:pointer;color:var(--sub);
+}
+.modal-busca{padding:12px 20px;border-bottom:1px solid var(--linha);}
+.modal-busca input{
+  width:100%;border:1.5px solid var(--linha);border-radius:10px;padding:10px 13px;
+  font-family:var(--fonte);font-size:14px;outline:none;background:#FBFCFE;
+}
+.modal-busca input:focus{border-color:var(--marca);}
+.modal-lista{overflow-y:auto;padding:10px 14px 20px;display:flex;flex-direction:column;gap:8px;}
+.os-item{
+  display:flex;align-items:center;gap:12px;border:1px solid var(--linha);border-radius:12px;
+  padding:12px 14px;background:#FBFCFE;
+}
+.os-item .os-info{flex:1;min-width:0;}
+.os-item .os-sinistro{font-family:var(--fonte-mono);font-weight:600;font-size:14px;color:var(--marca-escuro);}
+.os-item .os-detalhe{font-size:12.5px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.os-item button{
+  border:none;border-radius:8px;padding:8px 13px;font-family:var(--fonte);
+  font-size:12.5px;font-weight:600;cursor:pointer;
+}
+.os-item .abrir{background:var(--marca);color:#fff;}
+.os-item .excluir{background:#FDECEC;color:var(--vermelho);}
+.modal-vazio{text-align:center;color:var(--sub);font-size:13.5px;padding:34px 20px;}
+
+@media(max-width:720px){
+  .grade{grid-template-columns:1fr;}
+  .assinatura-area{grid-template-columns:1fr;}
+  .progresso{display:none;}
+  .topo .btn-exportar,.topo .btn-salvar{display:none;}
+  .topo .btn{padding:9px 14px;font-size:13px;}
+}
+
+/* ============ MODELO DO PDF (oculto na tela) ============ */
+#docModelo{position:fixed;left:-12000px;top:0;}
+.doc-pagina{background:#fff;width:794px;min-height:1123px;padding:45px 55px;font-family:Calibri,Arial,sans-serif;color:#000;}
+.doc-quadro{border:1.5px solid #000;}
+.doc-titulo{text-align:center;font-size:34px;font-weight:800;text-decoration:underline;padding:22px 0;}
+.doc-secao{background:#FFF2CC;border-top:1.5px solid #000;border-bottom:1.5px solid #000;font-weight:800;font-size:13px;text-decoration:underline;padding:4px 8px;}
+.doc-secao.centro{text-align:center;font-size:16px;}
+.doc-linha{display:flex;align-items:center;gap:6px;padding:10px 8px;font-size:14px;}
+.doc-rotulo{font-weight:800;white-space:nowrap;}
+.doc-valor{font-weight:700;flex:1;padding:0 4px;min-height:18px;}
+.doc-tab{display:flex;border-bottom:1.5px solid #000;font-size:14px;}
+.doc-tab .c1{width:140px;border-right:1.5px solid #000;font-weight:800;padding:7px 8px;}
+.doc-tab .c2{flex:1;text-align:center;font-weight:700;padding:7px 8px;}
+.doc-parecer{padding:10px;font-weight:700;font-size:14px;min-height:130px;white-space:pre-wrap;}
+.doc-faixa{padding:7px 8px;text-align:center;font-weight:800;font-size:14px;border-bottom:1px solid #000;min-height:32px;}
+.doc-motivo{display:flex;padding:7px 8px;font-size:14px;border-bottom:1px solid #000;min-height:32px;}
+.doc-motivo .doc-rotulo{margin-left:18px;margin-right:12px;}
+.doc-motivo .doc-valor{text-align:center;}
+.doc-opcoes{display:flex;justify-content:space-around;align-items:center;padding:18px 10px;}
+.doc-opcao{display:flex;align-items:center;gap:14px;}
+.doc-caixinha{width:16px;height:16px;border:1.2px solid #555;font-size:13px;line-height:15px;text-align:center;}
+.doc-etiqueta{border:1.5px solid #000;font-size:20px;font-weight:800;padding:8px 26px;}
+.doc-grade-fotos{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-bottom:34px;}
+.doc-caixa-foto{border:1.5px solid #000;}
+.doc-caixa-foto .cab{background:#FFF2CC;border-bottom:1.5px solid #000;text-align:center;font-weight:800;font-size:12.5px;text-decoration:underline;padding:4px 6px;}
+.doc-alvo{height:280px;background:#efefef;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.doc-alvo.grande{height:250px;}
+.doc-alvo img{width:100%;height:100%;object-fit:contain;background:#fff;}
+.doc-alvo .vazio{color:#8a8a8a;font-size:13px;}
+.doc-rodape{display:flex;justify-content:space-between;align-items:flex-end;margin-top:110px;gap:40px;}
+.doc-ass{width:300px;}
+.doc-ass img{width:300px;height:90px;display:block;}
+.doc-ass .traco{border-top:1.5px solid #000;margin-top:4px;padding-top:4px;font-weight:800;font-size:13px;}
+.doc-localdata{text-align:center;min-width:260px;}
+.doc-localdata .valor{border-bottom:1px solid #000;padding-bottom:3px;font-weight:700;font-size:14px;}
+.doc-localdata .leg{font-weight:800;font-size:13px;margin-top:4px;}
+</style>
+</head>
+<body>
+
+<!-- ================= TOPO ================= -->
+<header class="topo">
+  <div class="logotipo">
+    <div class="marca-icone">
+      <img src="data:image/jpeg;base64,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" alt="Mundivideo Eletrônica">
+    </div>
+    <div>
+      <h1>Análise Técnica</h1>
+      <small>Mundivideo Eletrônica · Laudos e sinistros</small>
+    </div>
+  </div>
+  <div class="progresso">
+    <div class="trilha"><div class="preenchido" id="barraProgresso"></div></div>
+    <span id="textoProgresso">0 de 12 itens</span>
+  </div>
+  <button class="btn btn-fantasma" onclick="abrirOrdens()">Ordens salvas</button>
+  <button class="btn btn-fantasma" onclick="novaAnalise()">Nova análise</button>
+  <button class="btn btn-salvar" onclick="salvarOrdem()">Salvar ordem</button>
+  <button class="btn btn-exportar" onclick="exportarPDF()">Exportar PDF</button>
+</header>
+
+<main class="conteudo">
+
+  <!-- Assistência -->
+  <section class="cartao">
+    <div class="cartao-cabecalho">
+      <div class="icone"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg></div>
+      <div><h2>Assistência técnica</h2><p>Dados da empresa responsável pelo laudo</p></div>
+    </div>
+    <div class="cartao-corpo grade">
+      <div class="campo">
+        <label for="assistencia">Assistência</label>
+        <input type="text" id="assistencia" value="MUNDIVIDEO ELETRÔNICA LTDA">
+      </div>
+      <div class="campo">
+        <label for="cnpj">CNPJ</label>
+        <input type="text" id="cnpj" class="mono" value="02.114.229/0001-82">
+      </div>
+    </div>
+  </section>
+
+  <!-- Consumidor e produto -->
+  <section class="cartao">
+    <div class="cartao-cabecalho">
+      <div class="icone"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg></div>
+      <div><h2>Consumidor e produto</h2><p>Identificação do sinistro e do aparelho analisado</p></div>
+    </div>
+    <div class="cartao-corpo grade">
+      <div class="campo">
+        <label for="serial">Número de série</label>
+        <input type="text" id="serial" class="mono" placeholder="941577B494AA171141" data-obrig>
+      </div>
+      <div class="campo">
+        <label for="sinistro">Sinistro</label>
+        <input type="text" id="sinistro" class="mono" placeholder="46176551" data-obrig>
+      </div>
+      <div class="campo">
+        <label for="marca">Marca</label>
+        <input type="text" id="marca" placeholder="TCL" data-obrig>
+      </div>
+      <div class="campo">
+        <label for="modelo">Modelo</label>
+        <input type="text" id="modelo" class="mono" placeholder="32S5400AF" data-obrig>
+      </div>
+    </div>
+  </section>
+
+  <!-- Parecer -->
+  <section class="cartao">
+    <div class="cartao-cabecalho">
+      <div class="icone"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg></div>
+      <div><h2>Parecer técnico</h2><p>Conclusão após a análise do produto</p></div>
+    </div>
+    <div class="cartao-corpo">
+      <div class="campo">
+        <label for="parecer">Parecer após análise</label>
+        <textarea id="parecer" placeholder="Ex.: NÃO FUNCIONA, DEFEITO NA PLACA PRINCIPAL." data-obrig></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- Peças -->
+  <section class="cartao">
+    <div class="cartao-cabecalho">
+      <div class="icone"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+      <div><h2>Peças para troca</h2><p>Informe a peça necessária e o motivo da substituição</p></div>
+    </div>
+    <div class="cartao-corpo">
+      <div class="peca-bloco">
+        <span class="tag">PEÇA 1</span>
+        <div class="grade">
+          <div class="campo">
+            <label for="peca1">Peça</label>
+            <input type="text" id="peca1" placeholder="PLACA PRINCIPAL" data-obrig>
+          </div>
+          <div class="campo">
+            <label for="motivo1">Motivo</label>
+            <input type="text" id="motivo1" placeholder="COM DEFEITO" data-obrig>
+          </div>
+        </div>
+      </div>
+      <div class="peca-bloco">
+        <span class="tag">PEÇA 2 · OPCIONAL</span>
+        <div class="grade">
+          <div class="campo">
+            <label for="peca2">Peça</label>
+            <input type="text" id="peca2" placeholder="Deixe em branco se não houver">
+          </div>
+          <div class="campo">
+            <label for="motivo2">Motivo</label>
+            <input type="text" id="motivo2" placeholder="Deixe em branco se não houver">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Atendimento -->
+  <section class="cartao">
+    <div class="cartao-cabecalho">
+      <div class="icone"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div><h2>Atendimento</h2><p>Forma de atendimento e coleta do produto</p></div>
+    </div>
+    <div class="cartao-corpo grade">
+      <div class="campo">
+        <label>Qual foi a forma de atendimento?</label>
+        <div class="segmentado" id="segAtendimento">
+          <button type="button" data-valor="PRESENCIAL" onclick="escolher('atendimento',this)">Presencial</button>
+          <button type="button" data-valor="REMOTO" onclick="escolher('atendimento',this)">Remoto</button>
+        </div>
+      </div>
+      <div class="campo">
+        <label>O produto foi coletado?</label>
+        <div class="segmentado" id="segColetado">
+          <button type="button" data-valor="SIM" onclick="escolher('coletado',this)">Sim</button>
+          <button type="button" data-valor="NÃO" onclick="escolher('coletado',this)">Não</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fotos -->
+  <section class="cartao">
+    <div class="cartao-cabecalho">
+      <div class="icone"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+      <div><h2>Fotos e evidências</h2><p>Toque em cada quadro para adicionar a foto correspondente</p></div>
+    </div>
+    <div class="cartao-corpo">
+      <div class="grade-fotos" id="gradeFotos"></div>
+    </div>
+  </section>
+
+  <!-- Assinatura -->
+  <section class="cartao">
+    <div class="cartao-cabecalho">
+      <div class="icone"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg></div>
+      <div><h2>Assinatura e finalização</h2><p>Assine no quadro abaixo (dedo ou mouse) ou envie uma imagem</p></div>
+    </div>
+    <div class="cartao-corpo assinatura-area">
+      <div class="quadro-assinatura">
+        <canvas id="canvasAssinatura" width="600" height="180"></canvas>
+        <div class="barra-ass">
+          <button type="button" onclick="limparAssinatura()">Limpar</button>
+          <label for="uploadAssinatura">Enviar imagem</label>
+          <input type="file" id="uploadAssinatura" accept="image/*" style="display:none;">
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="campo">
+          <label for="local">Local</label>
+          <input type="text" id="local" value="CARUARU">
+        </div>
+        <div class="campo">
+          <label for="data">Data</label>
+          <input type="text" id="data" class="mono">
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- rodapé fixo -->
+<div class="rodape-acao">
+  <div style="width:100%;max-width:560px;">
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-salvar" id="btnSalvarRodape" style="flex:1;border:1.5px solid var(--marca);padding:13px 12px;font-size:14.5px;" onclick="salvarOrdem()">
+        Salvar ordem
+      </button>
+      <button class="btn btn-exportar" id="btnExportarRodape" style="flex:1.4;padding:13px 12px;font-size:14.5px;" onclick="exportarPDF()">
+        Exportar PDF
+      </button>
+    </div>
+    <div class="aviso">Salve a ordem para poder reabri-la depois neste aparelho.</div>
+  </div>
+</div>
+
+<!-- modal de ordens salvas -->
+<div class="modal-fundo" id="modalOrdens" onclick="if(event.target===this)fecharOrdens()">
+  <div class="modal">
+    <div class="modal-cabecalho">
+      <h3>Ordens de serviço salvas</h3>
+      <button class="fechar" onclick="fecharOrdens()">✕</button>
+    </div>
+    <div class="modal-busca">
+      <input type="text" id="buscaOrdens" placeholder="Buscar por sinistro, serial, marca ou modelo..." oninput="listarOrdens(this.value)">
+    </div>
+    <div class="modal-lista" id="listaOrdens"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="seletorFoto" accept="image/*" style="display:none;">
+
+<!-- ================= MODELO OCULTO DO PDF (layout oficial) ================= -->
+<div id="docModelo">
+  <div class="doc-pagina">
+    <div class="doc-quadro">
+      <div class="doc-titulo">ANALISE TÉCNICA</div>
+      <div class="doc-secao">ASSISTÊNCIA TÉCNICA</div>
+      <div class="doc-linha">
+        <span class="doc-rotulo">Assistência:</span><span class="doc-valor" data-doc="assistencia"></span>
+        <span class="doc-rotulo">CNPJ:</span><span class="doc-valor" data-doc="cnpj" style="flex:.7"></span>
+      </div>
+      <div class="doc-secao">CONSUMIDOR</div>
+      <div class="doc-linha">
+        <span class="doc-rotulo">Serial:</span><span class="doc-valor" data-doc="serial"></span>
+        <span class="doc-rotulo">Sinistro:</span><span class="doc-valor" data-doc="sinistro" style="flex:.7"></span>
+      </div>
+      <div class="doc-secao">PRODUTO</div>
+      <div class="doc-tab"><div class="c1">Marca:</div><div class="c2" data-doc="marca"></div></div>
+      <div class="doc-tab" style="border-bottom:1.5px solid #000;"><div class="c1">Modelo:</div><div class="c2" data-doc="modelo"></div></div>
+      <div class="doc-secao">PARECER TÉCNICO APÓS ANALISE DO PRODUTO:</div>
+      <div class="doc-parecer" data-doc="parecer"></div>
+      <div class="doc-secao">PEÇA QUE NECESSITA SER TROCADA E MOTIVO?</div>
+      <div class="doc-faixa" data-doc="peca1"></div>
+      <div class="doc-motivo"><span class="doc-rotulo">MOTIVO:</span><span class="doc-valor" data-doc="motivo1"></span></div>
+      <div class="doc-faixa" data-doc="peca2"></div>
+      <div class="doc-motivo"><span class="doc-rotulo">MOTIVO:</span><span class="doc-valor" data-doc="motivo2"></span></div>
+      <div class="doc-secao centro">QUAL FOI A FORMA DE ATENDIMENTO?</div>
+      <div class="doc-opcoes">
+        <div class="doc-opcao"><span class="doc-caixinha" data-check="atendimento:PRESENCIAL"></span><span class="doc-etiqueta">PRESENCIAL</span></div>
+        <div class="doc-opcao"><span class="doc-caixinha" data-check="atendimento:REMOTO"></span><span class="doc-etiqueta">REMOTO</span></div>
+      </div>
+      <div class="doc-secao centro">PRODUTO FOI COLETADO?</div>
+      <div class="doc-opcoes">
+        <div class="doc-opcao"><span class="doc-caixinha" data-check="coletado:SIM"></span><span class="doc-etiqueta">SIM</span></div>
+        <div class="doc-opcao"><span class="doc-caixinha" data-check="coletado:NÃO"></span><span class="doc-etiqueta">NÃO</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-pagina">
+    <div class="doc-grade-fotos">
+      <div class="doc-caixa-foto"><div class="cab">FOTO DA ETIQUETA DO PRODUTO</div><div class="doc-alvo" data-docfoto="etiqueta"></div></div>
+      <div class="doc-caixa-foto"><div class="cab">FOTO RESIDÊNCIA DO SEGURADO</div><div class="doc-alvo" data-docfoto="residencia"></div></div>
+    </div>
+    <div class="doc-grade-fotos">
+      <div class="doc-caixa-foto"><div class="cab">FOTO DO DEFEITO ENCONTRADO</div><div class="doc-alvo" data-docfoto="defeito1"></div></div>
+      <div class="doc-caixa-foto"><div class="cab">FOTO DO DEFEITO ENCONTRADO</div><div class="doc-alvo" data-docfoto="defeito2"></div></div>
+    </div>
+    <div class="doc-grade-fotos" style="margin-bottom:0;">
+      <div class="doc-caixa-foto"><div class="cab">COTAÇÃO DO ORÇAMENTO DA PEÇA ATÉ 30 DIAS</div><div class="doc-alvo" data-docfoto="cotacao1"></div></div>
+      <div class="doc-caixa-foto"><div class="cab">COTAÇÃO DO ORÇAMENTO DA PEÇA ATÉ 30 DIAS</div><div class="doc-alvo" data-docfoto="cotacao2"></div></div>
+    </div>
+  </div>
+
+  <div class="doc-pagina">
+    <div class="doc-caixa-foto">
+      <div class="cab">PRINT KM TRAJETO AT X CASA DO SEGURADO</div>
+      <div class="doc-alvo grande" data-docfoto="km"></div>
+    </div>
+    <div class="doc-rodape">
+      <div class="doc-ass">
+        <img id="docAssinatura" alt="">
+        <div class="traco">Assinatura Técnico Responsàvel</div>
+      </div>
+      <div class="doc-localdata">
+        <div class="valor" data-doc="localdata"></div>
+        <div class="leg">Local e Data</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= ESTADO ================= */
+const fotos = {}; // chave -> dataURL
+const escolhas = { atendimento:null, coletado:null };
+let temAssinatura = false;
+
+const listaFotos = [
+  {chave:'etiqueta',   nome:'Etiqueta do produto'},
+  {chave:'residencia', nome:'Residência do segurado'},
+  {chave:'defeito1',   nome:'Defeito encontrado 1'},
+  {chave:'defeito2',   nome:'Defeito encontrado 2'},
+  {chave:'cotacao1',   nome:'Cotação da peça 1'},
+  {chave:'cotacao2',   nome:'Cotação da peça 2'},
+  {chave:'km',         nome:'Print KM do trajeto'},
+];
+
+/* ================= DATA DE HOJE ================= */
+(function(){
+  const h=new Date();
+  document.getElementById('data').value =
+    String(h.getDate()).padStart(2,'0')+'/'+String(h.getMonth()+1).padStart(2,'0')+'/'+h.getFullYear();
+})();
+
+/* ================= TILES DE FOTO ================= */
+const grade=document.getElementById('gradeFotos');
+const seletor=document.getElementById('seletorFoto');
+let chaveAtual=null;
+
+const iconeCamera='<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+
+listaFotos.forEach(f=>{
+  const tile=document.createElement('div');
+  tile.className='foto-tile';
+  tile.dataset.chave=f.chave;
+  tile.innerHTML='<div class="foto-icone">'+iconeCamera+'</div>'+
+    '<div class="foto-nome">'+f.nome+'</div>'+
+    '<div class="foto-dica">Clique para adicionar</div>';
+  tile.addEventListener('click',()=>{chaveAtual=f.chave;seletor.value='';seletor.click();});
+  grade.appendChild(tile);
+});
+
+/* Redimensiona a imagem antes de guardar (essencial para celular:
+   fotos de câmera têm 10MP+ e travam a geração do PDF) */
+function lerImagemRedimensionada(arquivo,maxDim){
+  return new Promise((resolver,rejeitar)=>{
+    const leitor=new FileReader();
+    leitor.onerror=()=>rejeitar(new Error('leitura'));
+    leitor.onload=e=>{
+      const img=new Image();
+      img.onerror=()=>rejeitar(new Error('imagem'));
+      img.onload=()=>{
+        let w=img.width,h=img.height;
+        const fator=Math.min(1,maxDim/Math.max(w,h));
+        w=Math.round(w*fator);h=Math.round(h*fator);
+        const c=document.createElement('canvas');
+        c.width=w;c.height=h;
+        const cx=c.getContext('2d');
+        cx.fillStyle='#fff';cx.fillRect(0,0,w,h);
+        cx.drawImage(img,0,0,w,h);
+        resolver(c.toDataURL('image/jpeg',0.85));
+      };
+      img.src=e.target.result;
+    };
+    leitor.readAsDataURL(arquivo);
+  });
+}
+
+seletor.addEventListener('change',()=>{
+  const arq=seletor.files[0];
+  if(!arq||!chaveAtual)return;
+  const chave=chaveAtual;
+  lerImagemRedimensionada(arq,1400).then(dataUrl=>{
+    fotos[chave]=dataUrl;
+    desenharTile(chave);
+    atualizarProgresso();
+  }).catch(()=>toast('Não foi possível carregar essa foto. Tente outra.'));
+});
+
+function desenharTile(chave){
+  const tile=grade.querySelector('[data-chave="'+chave+'"]');
+  const nome=listaFotos.find(f=>f.chave===chave).nome;
+  if(fotos[chave]){
+    tile.classList.add('com-foto');
+    tile.innerHTML='<img src="'+fotos[chave]+'" alt="">'+
+      '<div class="selo-ok">✓</div>'+
+      '<div class="sobreposicao"><span>'+nome+'</span>'+
+      '<button type="button" onclick="removerFoto(event,\''+chave+'\')">Remover</button></div>';
+  }else{
+    tile.classList.remove('com-foto');
+    tile.innerHTML='<div class="foto-icone">'+iconeCamera+'</div>'+
+      '<div class="foto-nome">'+nome+'</div>'+
+      '<div class="foto-dica">Clique para adicionar</div>';
+  }
+}
+function removerFoto(ev,chave){
+  ev.stopPropagation();
+  delete fotos[chave];
+  desenharTile(chave);
+  atualizarProgresso();
+}
+
+/* ================= SEGMENTADOS ================= */
+function escolher(grupo,btn){
+  escolhas[grupo]=btn.dataset.valor;
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  atualizarProgresso();
+}
+
+/* ================= ASSINATURA ================= */
+const canvas=document.getElementById('canvasAssinatura');
+const ctx=canvas.getContext('2d');
+ctx.lineWidth=3;ctx.lineCap='round';ctx.strokeStyle='#1a1a5e';
+let desenhando=false;
+function pos(e){
+  const r=canvas.getBoundingClientRect();
+  const p=e.touches?e.touches[0]:e;
+  return {x:(p.clientX-r.left)*(canvas.width/r.width),y:(p.clientY-r.top)*(canvas.height/r.height)};
+}
+canvas.addEventListener('mousedown',e=>{desenhando=true;temAssinatura=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);atualizarProgresso();});
+canvas.addEventListener('mousemove',e=>{if(!desenhando)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();});
+window.addEventListener('mouseup',()=>desenhando=false);
+canvas.addEventListener('touchstart',e=>{e.preventDefault();desenhando=true;temAssinatura=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);atualizarProgresso();},{passive:false});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!desenhando)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();},{passive:false});
+canvas.addEventListener('touchend',()=>desenhando=false);
+
+function limparAssinatura(){ctx.clearRect(0,0,canvas.width,canvas.height);temAssinatura=false;atualizarProgresso();}
+
+document.getElementById('uploadAssinatura').addEventListener('change',function(){
+  const arq=this.files[0];if(!arq)return;
+  const leitor=new FileReader();
+  leitor.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const esc=Math.min(canvas.width/img.width,canvas.height/img.height);
+      const w=img.width*esc,h=img.height*esc;
+      ctx.drawImage(img,(canvas.width-w)/2,(canvas.height-h)/2,w,h);
+      temAssinatura=true;atualizarProgresso();
+    };
+    img.src=e.target.result;
+  };
+  leitor.readAsDataURL(arq);
+});
+
+/* ================= PROGRESSO ================= */
+const camposObrig=['serial','sinistro','marca','modelo','parecer','peca1','motivo1'];
+camposObrig.forEach(id=>document.getElementById(id).addEventListener('input',atualizarProgresso));
+
+function atualizarProgresso(){
+  let total=0,ok=0;
+  camposObrig.forEach(id=>{total++;if(document.getElementById(id).value.trim())ok++;});
+  total++;if(escolhas.atendimento)ok++;
+  total++;if(escolhas.coletado)ok++;
+  total++;if(fotos['etiqueta'])ok++;
+  total++;if(fotos['residencia'])ok++;
+  total++;if(temAssinatura)ok++;
+  document.getElementById('barraProgresso').style.width=(ok/total*100)+'%';
+  document.getElementById('textoProgresso').textContent=ok+' de '+total+' itens';
+}
+atualizarProgresso();
+
+/* ================= NOVA ANÁLISE ================= */
+function novaAnalise(){
+  if(!confirm('Começar uma nova análise? Todos os campos, fotos e assinatura serão apagados. (Ordens já salvas não são afetadas.)'))return;
+  ordemAtualId=null;
+  ['serial','sinistro','marca','modelo','parecer','peca1','motivo1','peca2','motivo2'].forEach(id=>document.getElementById(id).value='');
+  Object.keys(fotos).forEach(k=>{delete fotos[k];desenharTile(k);});
+  escolhas.atendimento=null;escolhas.coletado=null;
+  document.querySelectorAll('.segmentado button').forEach(b=>b.classList.remove('ativo'));
+  limparAssinatura();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ================= TOAST ================= */
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('mostrar');
+  setTimeout(()=>t.classList.remove('mostrar'),3200);
+}
+
+/* ================= BANCO DE DADOS (IndexedDB) ================= */
+let bd=null, ordemAtualId=null;
+
+function abrirBanco(){
+  return new Promise((resolver,rejeitar)=>{
+    if(bd)return resolver(bd);
+    const req=indexedDB.open('mundivideo_os',1);
+    req.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains('ordens')){
+        db.createObjectStore('ordens',{keyPath:'id',autoIncrement:true});
+      }
+    };
+    req.onsuccess=e=>{bd=e.target.result;resolver(bd);};
+    req.onerror=()=>rejeitar(req.error);
+  });
+}
+
+function coletarEstado(){
+  const v=id=>document.getElementById(id).value;
+  return {
+    campos:{
+      assistencia:v('assistencia'),cnpj:v('cnpj'),
+      serial:v('serial'),sinistro:v('sinistro'),
+      marca:v('marca'),modelo:v('modelo'),
+      parecer:v('parecer'),
+      peca1:v('peca1'),motivo1:v('motivo1'),
+      peca2:v('peca2'),motivo2:v('motivo2'),
+      local:v('local'),data:v('data')
+    },
+    escolhas:{...escolhas},
+    fotos:{...fotos},
+    assinatura:temAssinatura?canvas.toDataURL('image/png'):null
+  };
+}
+
+async function salvarOrdem(){
+  try{
+    await abrirBanco();
+    const estado=coletarEstado();
+    if(!estado.campos.sinistro.trim() && !estado.campos.serial.trim()){
+      toast('Preencha ao menos o sinistro ou o serial antes de salvar.');
+      return;
+    }
+    const registro={
+      sinistro:estado.campos.sinistro.trim(),
+      serial:estado.campos.serial.trim(),
+      marca:estado.campos.marca.trim(),
+      modelo:estado.campos.modelo.trim(),
+      atualizadoEm:Date.now(),
+      estado:estado
+    };
+    if(ordemAtualId!==null)registro.id=ordemAtualId;
+    const tx=bd.transaction('ordens','readwrite');
+    const req=tx.objectStore('ordens').put(registro);
+    req.onsuccess=()=>{
+      ordemAtualId=req.result;
+      toast('Ordem salva'+(registro.sinistro?(' — sinistro '+registro.sinistro):'')+'.');
+    };
+    req.onerror=()=>toast('Não foi possível salvar. Tente novamente.');
+  }catch(e){
+    toast('Banco de dados indisponível neste navegador.');
+  }
+}
+
+function abrirOrdens(){
+  document.getElementById('modalOrdens').classList.add('aberto');
+  document.getElementById('buscaOrdens').value='';
+  listarOrdens('');
+}
+function fecharOrdens(){
+  document.getElementById('modalOrdens').classList.remove('aberto');
+}
+
+async function listarOrdens(filtro){
+  await abrirBanco();
+  const lista=document.getElementById('listaOrdens');
+  const tx=bd.transaction('ordens','readonly');
+  const req=tx.objectStore('ordens').getAll();
+  req.onsuccess=()=>{
+    let itens=req.result.sort((a,b)=>b.atualizadoEm-a.atualizadoEm);
+    const f=(filtro||'').toLowerCase().trim();
+    if(f){
+      itens=itens.filter(o=>
+        (o.sinistro||'').toLowerCase().includes(f)||
+        (o.serial||'').toLowerCase().includes(f)||
+        (o.marca||'').toLowerCase().includes(f)||
+        (o.modelo||'').toLowerCase().includes(f)
+      );
+    }
+    if(!itens.length){
+      lista.innerHTML='<div class="modal-vazio">'+(f?'Nenhuma ordem encontrada para essa busca.':'Nenhuma ordem salva ainda.<br>Preencha o laudo e toque em "Salvar ordem".')+'</div>';
+      return;
+    }
+    lista.innerHTML=itens.map(o=>{
+      const dt=new Date(o.atualizadoEm);
+      const quando=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear()
+        +' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+      return '<div class="os-item">'+
+        '<div class="os-info">'+
+          '<div class="os-sinistro">'+(o.sinistro?('Sinistro '+o.sinistro):(o.serial||'Sem identificação'))+'</div>'+
+          '<div class="os-detalhe">'+[o.marca,o.modelo].filter(Boolean).join(' · ')+(o.marca||o.modelo?' · ':'')+quando+'</div>'+
+        '</div>'+
+        '<button class="abrir" onclick="carregarOrdem('+o.id+')">Abrir</button>'+
+        '<button class="excluir" onclick="excluirOrdem('+o.id+')">Excluir</button>'+
+      '</div>';
+    }).join('');
+  };
+}
+
+async function carregarOrdem(id){
+  await abrirBanco();
+  const tx=bd.transaction('ordens','readonly');
+  const req=tx.objectStore('ordens').get(id);
+  req.onsuccess=()=>{
+    const o=req.result;
+    if(!o)return;
+    const est=o.estado;
+    Object.entries(est.campos).forEach(([id2,val])=>{
+      const el=document.getElementById(id2);
+      if(el)el.value=val||'';
+    });
+    // seleções
+    escolhas.atendimento=est.escolhas.atendimento;
+    escolhas.coletado=est.escolhas.coletado;
+    document.querySelectorAll('#segAtendimento button').forEach(b=>b.classList.toggle('ativo',b.dataset.valor===escolhas.atendimento));
+    document.querySelectorAll('#segColetado button').forEach(b=>b.classList.toggle('ativo',b.dataset.valor===escolhas.coletado));
+    // fotos
+    Object.keys(fotos).forEach(k=>delete fotos[k]);
+    Object.assign(fotos,est.fotos||{});
+    listaFotos.forEach(f=>desenharTile(f.chave));
+    // assinatura
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    temAssinatura=false;
+    if(est.assinatura){
+      const img=new Image();
+      img.onload=()=>{ctx.drawImage(img,0,0,canvas.width,canvas.height);temAssinatura=true;atualizarProgresso();};
+      img.src=est.assinatura;
+    }
+    ordemAtualId=o.id;
+    atualizarProgresso();
+    fecharOrdens();
+    toast('Ordem carregada. Alterações serão salvas na mesma ordem.');
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+}
+
+async function excluirOrdem(id){
+  if(!confirm('Excluir esta ordem salva? Essa ação não pode ser desfeita.'))return;
+  await abrirBanco();
+  const tx=bd.transaction('ordens','readwrite');
+  tx.objectStore('ordens').delete(id).onsuccess=()=>{
+    if(ordemAtualId===id)ordemAtualId=null;
+    listarOrdens(document.getElementById('buscaOrdens').value);
+    toast('Ordem excluída.');
+  };
+}
+
+abrirBanco().catch(()=>{});
+
+/* ================= EXPORTAR PDF ================= */
+async function exportarPDF(){
+  const botoes=[...document.querySelectorAll('.btn-exportar')];
+  botoes.forEach(b=>{b.disabled=true;b.textContent='Gerando PDF...';});
+  const restaurar=()=>botoes.forEach(b=>{b.disabled=false;b.textContent='Exportar PDF';});
+
+  const modelo=document.getElementById('docModelo');
+
+  // Textos
+  const valor=id=>document.getElementById(id).value.trim();
+  const mapa={
+    assistencia:valor('assistencia'), cnpj:valor('cnpj'),
+    serial:valor('serial'), sinistro:valor('sinistro'),
+    marca:valor('marca'), modelo:valor('modelo'),
+    parecer:valor('parecer'),
+    peca1:valor('peca1'), motivo1:valor('motivo1'),
+    peca2:valor('peca2'), motivo2:valor('motivo2'),
+    localdata:(valor('local')||'')+' - '+(valor('data')||'')
+  };
+  modelo.querySelectorAll('[data-doc]').forEach(el=>{el.textContent=mapa[el.dataset.doc]||'';});
+
+  // Checkboxes
+  modelo.querySelectorAll('[data-check]').forEach(el=>{
+    const [grupo,val]=el.dataset.check.split(':');
+    el.textContent=(escolhas[grupo]===val)?'✓':'';
+  });
+
+  // Fotos
+  modelo.querySelectorAll('[data-docfoto]').forEach(alvo=>{
+    const chave=alvo.dataset.docfoto;
+    alvo.innerHTML=fotos[chave]?'<img src="'+fotos[chave]+'">':'<span class="vazio">FOTOS</span>';
+  });
+
+  // Assinatura
+  document.getElementById('docAssinatura').src=canvas.toDataURL('image/png');
+
+  // Clona fora da tela para renderização, com largura fixa de A4
+  const clone=modelo.cloneNode(true);
+  clone.id='';
+  clone.style.cssText='position:absolute;left:0;top:0;background:#fff;width:794px;';
+  const envelope=document.createElement('div');
+  envelope.style.cssText='position:absolute;left:-12000px;top:0;width:794px;overflow:hidden;';
+  envelope.appendChild(clone);
+  document.body.appendChild(envelope);
+
+  const nomeArquivo='ANALISE_TECNICA'+(mapa.sinistro?('_'+mapa.sinistro):'')+'.pdf';
+
+  try{
+    // Renderiza UMA PÁGINA POR VEZ (canvases menores = não trava no celular)
+    const paginas=clone.querySelectorAll('.doc-pagina');
+    paginas.forEach(p=>{p.style.height='1123px';p.style.overflow='hidden';});
+
+    // Escala menor em telas pequenas para economizar memória
+    const escala=(Math.min(screen.width,screen.height)<500)?1.6:2;
+
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+
+    for(let i=0;i<paginas.length;i++){
+      const canvasPag=await html2canvas(paginas[i],{
+        scale:escala,useCORS:true,backgroundColor:'#ffffff',
+        windowWidth:900,logging:false
+      });
+      const img=canvasPag.toDataURL('image/jpeg',0.9);
+      if(i>0)pdf.addPage();
+      pdf.addImage(img,'JPEG',0,0,210,297);
+    }
+
+    envelope.remove();
+    const blob=pdf.output('blob');
+    baixarPDF(blob,nomeArquivo);
+    restaurar();
+    toast('PDF gerado: '+nomeArquivo);
+  }catch(erro){
+    envelope.remove();
+    restaurar();
+    toast('Não foi possível gerar o PDF. Tente novamente.');
+  }
+}
+
+/* Download compatível com celular:
+   1º tenta a folha de compartilhar (salvar em Arquivos, WhatsApp, e-mail...);
+   2º cai para o download por link;
+   3º em último caso abre o PDF em nova aba. */
+function baixarPDF(blob,nome){
+  const arquivo=new File([blob],nome,{type:'application/pdf'});
+  if(navigator.canShare && navigator.canShare({files:[arquivo]})){
+    navigator.share({files:[arquivo],title:nome}).catch(()=>baixarPorLink(blob,nome));
+  }else{
+    baixarPorLink(blob,nome);
+  }
+}
+function baixarPorLink(blob,nome){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=nome;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),10000);
+}
+</script>
+</body>
+</html>
